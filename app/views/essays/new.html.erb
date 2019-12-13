@@ -1,2 +1,6 @@
-<h1>Essays#new</h1>
-<p>Find me in app/views/essays/new.html.erb</p>
+<h1>New Essay</h1>
+<%= form_with model: @essay do |f| %>
+  <%= f.text_field :title %>
+  <%= f.rich_text_area :body %>
+  <%= f.submit %>
+<% end %>

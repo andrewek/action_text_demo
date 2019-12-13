@@ -41,10 +41,111 @@ There is no model here. Instead we join. A given model can have at most a single
 
 ```ruby
 class Essay < ApplicationRecord
-  has_rich_text :essay_body
+  has_rich_text :body
 end
 ```
 
 # Taking in the View
 
+What's the fun of ActionText if we can't interact with it. We'll start with our `new`, `create`, `index`, and `show` actions.
+
+## Index View
+
+```ruby
+def index
+  @essays = Essay.all
+end
+```
+
+```erb
+<h1>Essays</h1>
+<p><%= link_to "New Essay", new_essay_path %></p>
+<ul>
+  <% @essays.each do |essay| %>
+    <li><%= link_to essay.title, essay_path(essay) %></li>
+  <% end %>
+</ul>
+```
+
+## New View
+
+```ruby
+def new
+  @essay = Essay.new
+end
+```
+
+```erb
+<h1>New Essay</h1>
+<%= form_with model: @essay do |f| %>
+  <%= f.text_field :title %>
+  <%= f.rich_text_area :body %>
+  <%= f.submit %>
+<% end %>
+```
+
+## New View
+
+![inline](action_text_images/02.png)
+
+## New View
+
+![inline](action_text_images/03.png)
+
+## Create Action
+
+```ruby
+  def create
+    @essay = Essay.new(essay_params)
+    if @essay.save
+      redirect_to essays_path
+    else
+      render "new"
+    end
+  end
+
+  private
+
+  def essay_params
+    params.require(:essay).permit(:title, :body)
+  end
+```
+
+## Show Action
+
+```ruby
+def show
+  @essay = Essay.find(params[:id])
+end
+```
+
+```erb
+<h1><%= @essay.title %></h1>
+
+<%= @essay.body %>
+```
+
+## Show Action
+
+![inline](action_text_images/04.png)
+
+## Show Action
+
+![inline](action_text_images/05.png)
+
 # Tying it Together
+
+When we create an Essay record through our form, our form body is submitted as an HTML string.
+
+This creates a record in our rich-texts table, which in turn has as foreign key pointing out our Essay record.
+
+# Tying it Together
+
+When we fetch our Essay record and call `#body` on it, we fetch the associated rich text record. This in turn has a `body` attribute (no connection) which stores the serialized HTML.
+
+# Extensions
+
+1. Style the resulting HTML so it is more presentable
+2. Style the input form as needed
+3. Use `ActiveStorage` to allow for image/media uploads
+4. Examine other rich text editors (e.g. Slate) and compare/contrast
